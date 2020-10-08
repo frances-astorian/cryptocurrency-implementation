@@ -4,7 +4,7 @@
 
 case "$1" in
 
-    name) echo "FrancesDollar"
+    name) echo "CryptoDollar"
 	  # additional parameters provided: (none)
 	  ;;
 

@@ -1,4 +1,4 @@
-#Frances Astorian (fla9fk)
+#Frances Astorian
 
 JAVAC=javac
 

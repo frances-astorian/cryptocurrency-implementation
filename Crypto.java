@@ -1,5 +1,4 @@
-//Frances Astorian (fla9fk)
-//Cryptocurrency Homework (Crypto.java)
+//Frances Astorian
 //June 5 2020
 import java.util.*;
 import java.math.*;
@@ -13,7 +12,10 @@ import java.nio.file.*;
 
 public class Crypto {
 
-
+    /**
+     * Create the genesis block 
+     * This is the initial block in the block chain, and the block should always be the same
+     */
     public static void createGenesis() throws Exception{
         String block_0 = "This is the initial block in the block chain.";
         FileWriter gen = new FileWriter("block_0.txt");
@@ -22,6 +24,10 @@ public class Crypto {
         System.out.println("Genesis block created in block_0.txt");
     }
 
+    /**
+     * Generate a wallet
+     * This will create RSA public/private key set (1024 bit keys)
+     */
     public static void generateKeys(String filename) throws Exception{
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(1024);
@@ -44,8 +50,9 @@ public class Crypto {
         System.out.println("New wallet created in " +filename+ " with wallet tag "+getAddress(filename));
     }
 
-    // this converts an array of bytes into a hexadecimal number intext format
-    //taken from Sample.java from HW assignment instructions
+    /**
+     * Converts an array of bytes into a hexadecimal number in text format
+     */
     static String getHexString(byte[] b) {
         String result = "";
         for (int i = 0; i < b.length; i++) {
@@ -59,6 +66,10 @@ public class Crypto {
         return result;
     }
     
+    /**
+     * Get wallet tag
+     * This will print out the tag of the public key for a given wallet, which is the hash of the public key
+     */
     static String getAddress(String filename) throws Exception{
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String first = br.readLine();
@@ -68,18 +79,12 @@ public class Crypto {
         MessageDigest mD = MessageDigest.getInstance("SHA-256");
         String hash = convertHash(mD.digest(barr));
         
-        //System.out.println(hash.substring(0,16));
         return hash.substring(0,16);
-        /*
-        try{
-            FileWriter fw = new FileWriter(filename, true);
-            fw.write(hash);
-            fw.close();
-        }    
-        catch(Exception e){System.out.println("FileWriter failed.");}
-        */
     }
 
+    /**
+     * Converts hash byte to string representation of hash
+     */
     static String convertHash (byte hash[]) {
         int hashSize = 0;
         try {
@@ -105,6 +110,10 @@ public class Crypto {
         return new String(chash);
     }
 
+    /**
+     * Fund wallets
+     * This allows us to add as much money as we want to a wallet
+     */
     static void fund(String address, String amt, String dest)throws Exception{
 
         FileWriter tran = new FileWriter(dest);
@@ -114,10 +123,13 @@ public class Crypto {
             String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date());
             tran.write("Date: "+timeStamp+"\n");
             tran.close();
-            System.out.println(address + " wallet was funded with "+amt+" FrancesDollars on "+timeStamp+". Transaction statement in "+dest);
+            System.out.println(address + " wallet was funded with "+amt+" CryptoDollars on "+timeStamp+". Transaction statement in "+dest);
             
     }
 
+    /**
+     * Signs transfer statement with encypted private Key 
+     */
     public static String sign(String plainText, PrivateKey privateKey) throws Exception {
         Signature privateSignature = Signature.getInstance("SHA256withRSA");
         privateSignature.initSign(privateKey);
@@ -154,6 +166,11 @@ public class Crypto {
         return ret;
     }
 
+    /**
+     * Transfer funds
+     * This is how payments are made
+     * Will be provided with four additional command line parameters: the source wallet file name, the destination wallet address, the amount to transfer, and the file name to save the transaction statement to
+     */
     static void transfer(String sourceFile, String destAddr, String amt, String tran)throws Exception{
 
         FileWriter trans = new FileWriter(tran);
@@ -170,9 +187,13 @@ public class Crypto {
         trans.write(sign(toHash, keys.getPrivate()));
         trans.close();
 
-        System.out.println(getAddress(sourceFile) + " transferred "+ amt+" FrancesDollars to "+destAddr+" on "+timeStamp+". Transaction statement in "+tran);
+        System.out.println(getAddress(sourceFile) + " transferred "+ amt+" CryptoDollars to "+destAddr+" on "+timeStamp+". Transaction statement in "+tran);
     }
 
+    /**
+     * Check a balance
+     * Based on the transactions in the block chain and also in the ledger, compute the balance for the provided wallet.
+     */
     static double balance(String addr) throws Exception{
         double balance = 0;
         if(Files.exists(Paths.get("ledger.txt"))){
@@ -211,7 +232,9 @@ public class Crypto {
         return balance;
     }
 
-    //from link in assignment description
+    /**
+     * Verifies the signature
+     */
     public static boolean v(String plainText, String signature, PublicKey publicKey) throws Exception {
         Signature publicSignature = Signature.getInstance("SHA256withRSA");
         publicSignature.initVerify(publicKey);
@@ -222,6 +245,10 @@ public class Crypto {
         return publicSignature.verify(signatureBytes);
     }
 
+    /**
+     * Verify a transaction
+     * Verify that a given transaction statement is valid, which will require checking the signature and the availability of funds.
+     */
     static void verify(String filename, String trans)throws Exception{
         
         FileInputStream fstream = new FileInputStream(trans);
@@ -262,13 +289,19 @@ public class Crypto {
                 }
             }
         catch(Exception e){
-            //System.out.println("key error");
+            System.out.println("key error");
         }
            
         }
         
     }
 
+    /**
+     * Create, mine, and sign block
+     * This will form another block in the blockchain.
+     * The ledger will be emptied of transaction records, as they will all go into the current block being computed. 
+     * A nonce will have to be computed to ensure the hash is below a given value
+     */
     static void mine(String diff)throws Exception{
         int n = 1;
         while(Files.exists(Paths.get("block_"+n+".txt"))){
@@ -318,6 +351,10 @@ public class Crypto {
         return getHexString(encodedHash);
         }
 
+    /**
+     * Validate the blockchain
+     * This should go through the entire block chain, validating each one.  
+     * */    
     static void validate()throws Exception{
         int n = 1;
         while(Files.exists(Paths.get("block_"+n+".txt"))){
